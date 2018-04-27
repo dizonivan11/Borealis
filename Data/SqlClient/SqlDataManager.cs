@@ -4,13 +4,13 @@ using System.Text;
 
 namespace Borealis.Data.SqlClient
 {
-    public class SqlDataAdapter
+    public class SqlDataManager
     {
         public string HostName { get; set; }
         public string DatabaseName { get; set; }
-        public static string ConnectionFormat = "Server={0};Database{1};Trusted_connection=true;";
+        public static string ConnectionFormat = "Server={0};Database={1};Trusted_connection=true;";
 
-        public SqlDataAdapter(string hostName, string databaseName) {
+        public SqlDataManager(string hostName, string databaseName) {
             HostName = hostName;
             DatabaseName = databaseName;
         }
@@ -105,7 +105,7 @@ namespace Borealis.Data.SqlClient
             bool firstColumn = true;
             foreach (string columnName in row.Keys) {
                 if (!firstColumn) sb.Append(", ");
-                sb.Append(ParameterName(columnName));
+                sb.AppendFormat("{0}={1}", columnName, ParameterName(columnName));
                 firstColumn = false;
             }
             if (condition != string.Empty) sb.AppendFormat(" WHERE {0}", condition);
