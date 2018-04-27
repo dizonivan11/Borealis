@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Borealis.Net
@@ -49,6 +50,14 @@ namespace Borealis.Net
                 ret.Append(value);
             }
             return ret.ToString();
+        }
+
+        public static string[] Denumerate(this string value) {
+            return value.Split(new string[] { Network.ENUMERATOR }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        public static string[] Delist(this string value) {
+            return value.Split(new string[] { Network.ENUMERATOR_END }, StringSplitOptions.RemoveEmptyEntries);
         }
     }
 }

@@ -18,15 +18,4 @@ namespace Borealis.Net
             }
         }
     }
-
-    public static class StringExtension
-    {
-        public static string[] Enumerate(this string value) {
-            return value.Split(new string[] { Network.ENUMERATOR }, StringSplitOptions.RemoveEmptyEntries);
-        }
-
-        public static string[] List(this string value) {
-            return value.Split(new string[] { Network.ENUMERATOR_END }, StringSplitOptions.RemoveEmptyEntries);
-        }
-    }
 }
