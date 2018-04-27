@@ -1,7 +1,8 @@
 # Borealis
 
->	A .NET Library which contains a method for basic CRUD (Create, Retrieve, Update and Delete) operations. It can be used with SQL.
-> An example usage of the library
+> A .NET Library which contains a method for basic CRUD (Create, Retrieve, Update and Delete) operations. It can be used with SQL.
+
+> An example usage of the library.
 
 ```csharp
 using System;
