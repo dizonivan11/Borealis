@@ -4,7 +4,7 @@ public delegate void ScriptHandler(Borealis.Net.Network sender, Borealis.Net.Scr
 
 namespace Borealis.Net
 {
-    public static class Script
+    public class Script
     {
         public static Dictionary<string, ScriptHandler> Events;
 
@@ -16,6 +16,18 @@ namespace Borealis.Net
             if (Events.ContainsKey(e.Header)) {
                 Events[e.Header].DynamicInvoke(sender, e);
             }
+        }
+        
+        public Network Sender { get; set; }
+        public ScriptEventArgs Args { get; set; }
+
+        public Script(Network sender, ScriptEventArgs e) {
+            Sender = sender;
+            Args = e;
+        }
+
+        public void Run() {
+            Run(Sender, Args);
         }
     }
 }
