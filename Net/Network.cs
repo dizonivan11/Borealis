@@ -123,7 +123,7 @@ namespace Borealis.Net
             timer?.Stop();
             ping?.Abort();
         }
-
+        
         void Read(IAsyncResult ar) {
             try {
                 NetworkStream stream = Socket.GetStream();
