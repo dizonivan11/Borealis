@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using Timer = System.Timers.Timer;
 
-public delegate void DisconnectedHandler();
+public delegate void AsyncEventHandler();
 
 namespace Borealis.Net
 {
@@ -32,10 +32,14 @@ namespace Borealis.Net
             ENCODER = Encoding.UTF8;
         }
 
-        public TcpClient socket;
-        public byte[] buffer;
-        public string data;
+        public TcpClient Socket { get; set; }
+        public byte[] Buffer { get; set; }
+        public string Data { get; set; }
 
+        // Event Controller
+        public bool RunScriptAsync { get; set; }
+        public Queue<Script> EventQueue { get; set; }
+        
         // PING CONTROLLER (for response detection)
         private Stopwatch timer;
         private double timeWaited;
@@ -44,13 +48,18 @@ namespace Borealis.Net
         private bool stillResponding;
         private Timer delayer; // referenced to avoid being collected by the GC
 
-        public event DisconnectedHandler Disconnected;
+        public event AsyncEventHandler Disconnected;
         protected virtual void OnDisconnected() { Disconnected?.Invoke(); }
+        public event AsyncEventHandler Connected;
+        protected virtual void OnConnected() { Connected?.Invoke(); }
 
         public Network(TcpClient socket) {
-            this.socket = socket;
-            buffer = new byte[BUFFER_SIZE];
-            data = string.Empty;
+            this.Socket = socket;
+            Buffer = new byte[BUFFER_SIZE];
+            Data = string.Empty;
+
+            RunScriptAsync = true;
+            EventQueue = new Queue<Script>();
 
             timer = new Stopwatch();
             timeWaited = 0;
@@ -67,7 +76,7 @@ namespace Borealis.Net
             if (stillResponding) {
                 stillResponding = false;
                 try {
-                    Console.WriteLine("{0} still responding", socket.Client.RemoteEndPoint.ToString());
+                    Console.WriteLine("{0} still responding", Socket.Client.RemoteEndPoint.ToString());
                 } catch {
                     Console.WriteLine("Unknown address not responding");
                 }
@@ -76,25 +85,26 @@ namespace Borealis.Net
         }
 
         public async void Connect(IPEndPoint ipEndPoint) {
-            if (!socket.Connected) await socket.ConnectAsync(ipEndPoint.Address, ipEndPoint.Port);
-            socket.GetStream().BeginRead(buffer, 0, buffer.Length, new AsyncCallback(Read), null);
+            if (!Socket.Connected) await Socket.ConnectAsync(ipEndPoint.Address, ipEndPoint.Port);
+            OnConnected();
+            Socket.GetStream().BeginRead(Buffer, 0, Buffer.Length, new AsyncCallback(Read), null);
             WritePing();
         }
 
         Thread ping;
         public void Respond() {
             ping = new Thread(delegate () {
-                while (socket != null) {
+                while (Socket != null) {
                     timeWaited += timer.Elapsed.TotalMilliseconds;
                     timer.Restart();
                     if (timeWaited > TIMEOUT) {
-                        Console.WriteLine("Connection timeout for {0}", socket.Client.RemoteEndPoint.ToString());
+                        Console.WriteLine("Connection timeout for {0}", Socket.Client.RemoteEndPoint.ToString());
                         Disconnect();
                         return;
                     }
                 }
             });
-            socket.GetStream().BeginRead(buffer, 0, buffer.Length, new AsyncCallback(Read), null);
+            Socket.GetStream().BeginRead(Buffer, 0, Buffer.Length, new AsyncCallback(Read), null);
             timer.Start();
             ping.Start();
         }
@@ -105,49 +115,51 @@ namespace Borealis.Net
             OnDisconnected();
             hasDisconnected = true;
             try {
-                Console.WriteLine("{0} disconnected", socket?.Client.RemoteEndPoint.ToString());
+                Console.WriteLine("{0} disconnected", Socket?.Client.RemoteEndPoint.ToString());
             } catch {
                 Console.WriteLine("Unknown address disconnected");
             }
-            socket?.Close();
+            Socket?.Close();
             timer?.Stop();
             ping?.Abort();
         }
 
         void Read(IAsyncResult ar) {
             try {
-                NetworkStream stream = socket.GetStream();
+                NetworkStream stream = Socket.GetStream();
                 int byteSize = stream.EndRead(ar);
                 timeWaited = 0;
-                Console.WriteLine("{0} raw data length: {1}", socket.Client.RemoteEndPoint.ToString(), byteSize);
+                Console.WriteLine("{0} raw data length: {1}", Socket.Client.RemoteEndPoint.ToString(), byteSize);
 
                 if (byteSize > 0) {
-                    data += ENCODER.GetString(buffer);
+                    stillResponding = true;
+                    Data += ENCODER.GetString(Buffer);
 
-                    if (data.IndexOf('\0') > -1) {
-                        stillResponding = true;
-                        data = data.Replace("\0", string.Empty);
-                    }
-                    Console.WriteLine("{0} raw data: {1}", socket.Client.RemoteEndPoint.ToString(), data);
+                    if (Data.IndexOf('\0') > -1) Data = Data.Replace("\0", string.Empty);
+                    Console.WriteLine("{0} raw data: {1}", Socket.Client.RemoteEndPoint.ToString(), Data);
 
-                    if (data.IndexOf(EOS) > -1) {
-                        string[] requests = data.Split(new string[] { EOS }, StringSplitOptions.None);
+                    if (Data.IndexOf(EOS) > -1) {
+                        string[] requests = Data.Split(new string[] { EOS }, StringSplitOptions.None);
                         for (int i = 0; i < requests.Length - 1; i++) {
-                            Console.WriteLine("{0} sent data: {1}", socket.Client.RemoteEndPoint.ToString(), requests[i]);
+                            Console.WriteLine("{0} sent data: {1}", Socket.Client.RemoteEndPoint.ToString(), requests[i]);
                             requests[i] = requests[i].Replace(ENCODED_EOS, EOS);
                             requests[i] = requests[i].Replace(ENCODED_SPLITTER, SPLITTER);
                             ScriptEventArgs args = new ScriptEventArgs(requests[i]);
-                            Script.Run(this, args);
+                            if (RunScriptAsync) Script.Run(this, args);
+                            else {
+                                Script syncScript = new Script(this, args);
+                                EventQueue.Enqueue(syncScript);
+                            }
                         }
-                        data = requests[requests.Length - 1];
+                        Data = requests[requests.Length - 1];
                     }
-                    Console.WriteLine("{0} remaining data: {1}", socket.Client.RemoteEndPoint.ToString(), data);
+                    Console.WriteLine("{0} remaining data: {1}", Socket.Client.RemoteEndPoint.ToString(), Data);
                 } else {
                     Disconnect();
                     return;
                 };
-                buffer = new byte[BUFFER_SIZE];
-                stream.BeginRead(buffer, 0, buffer.Length, new AsyncCallback(Read), null);
+                Buffer = new byte[BUFFER_SIZE];
+                stream.BeginRead(Buffer, 0, Buffer.Length, new AsyncCallback(Read), null);
             } catch (Exception ex) {
                 Disconnect();
                 Console.WriteLine(ex.Message);
@@ -156,7 +168,7 @@ namespace Borealis.Net
 
         public async void WritePing() {
             try {
-                NetworkStream stream = socket.GetStream();
+                NetworkStream stream = Socket.GetStream();
                 byte[] buffer = ENCODER.GetBytes(new char[] { '\0' });
                 await stream.WriteAsync(buffer, 0, buffer.Length);
                 await stream.FlushAsync();
@@ -167,14 +179,14 @@ namespace Borealis.Net
 
         public async void Write(string header, string content) {
             try {
-                NetworkStream stream = socket.GetStream();
+                NetworkStream stream = Socket.GetStream();
                 content = content.Replace(EOS, ENCODED_EOS);
                 content = content.Replace(SPLITTER, ENCODED_SPLITTER);
                 string data = header + SPLITTER + content + EOS;
                 byte[] buffer = ENCODER.GetBytes(data);
                 await stream.WriteAsync(buffer, 0, buffer.Length);
                 await stream.FlushAsync();
-                Console.WriteLine(socket.Client.RemoteEndPoint.ToString() + " wrote " + data);
+                Console.WriteLine(Socket.Client.RemoteEndPoint.ToString() + " wrote " + data);
             } catch (Exception ex) {
                 Console.WriteLine(ex.Message);
             }
