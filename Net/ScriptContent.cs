@@ -12,10 +12,10 @@ namespace Borealis.Net
 
             string[] list = rawContent.Delist();
             for (int i = 0; i < list.Length; i++) {
-                list[i] = list[i].Replace(Network.ENCODED_ENUMERATOR_END, Network.ENUMERATOR_END);
+                list[i] = list[i].Decode(Network.ENUMERATOR_END);
                 string[] enumerated = list[i].Denumerate();
                 for (int j = 0; j < enumerated.Length; j++) {
-                    enumerated[j] = enumerated[j].Replace(Network.ENCODED_ENUMERATOR, Network.ENUMERATOR);
+                    enumerated[j] = enumerated[j].Decode(Network.ENUMERATOR);
                 }
                 Items.Add(enumerated);
             }
