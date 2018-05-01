@@ -67,6 +67,16 @@ namespace Borealis.Net
             delayer.Elapsed += Ping;
         }
 
+        public override int GetHashCode() {
+            return base.GetHashCode();
+        }
+
+        public override bool Equals(object obj) {
+            if (obj == null || GetType() != obj.GetType()) return false;
+            Network netObj = (Network)obj;
+            return Socket == netObj.Socket;
+        }
+
         private void Ping(object sender, System.Timers.ElapsedEventArgs e) {
             if (stillResponding) {
                 stillResponding = false;
