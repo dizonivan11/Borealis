@@ -36,7 +36,7 @@ namespace Borealis.Data.SqlClient
             bool firstColumn = true;
             foreach (string columnName in row.Keys) {
                 if (!firstColumn) sb.Append(", ");
-                sb.Append(columnName);
+                sb.AppendFormat("[{0}]",columnName);
                 firstColumn = false;
             }
             sb.AppendFormat(") VALUES(", tableName);
@@ -70,7 +70,7 @@ namespace Borealis.Data.SqlClient
             if (columnsToSelect.Length > 0) {
                 for (int i = 0; i < columnsToSelect.Length; i++) {
                     if (i > 0) sb.Append(", ");
-                    sb.Append(columnsToSelect[i]);
+                    sb.AppendFormat("[{0}]", columnsToSelect[i]);
                 }
             } else sb.Append("*");
             sb.AppendFormat(" FROM {0}", tableName);
@@ -105,7 +105,7 @@ namespace Borealis.Data.SqlClient
             bool firstColumn = true;
             foreach (string columnName in row.Keys) {
                 if (!firstColumn) sb.Append(", ");
-                sb.AppendFormat("{0}={1}", columnName, ParameterName(columnName));
+                sb.AppendFormat("[{0}]={1}", columnName, ParameterName(columnName));
                 firstColumn = false;
             }
             if (condition != string.Empty) sb.AppendFormat(" WHERE {0}", condition);
