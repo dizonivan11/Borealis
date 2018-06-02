@@ -9,5 +9,9 @@
             Decoded = decoded;
             Encoded = encoded;
         }
+
+        public override string ToString() {
+            return Decoded;
+        }
     }
 }
