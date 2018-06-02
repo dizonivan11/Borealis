@@ -54,6 +54,7 @@
     <Compile Include="Net\Script.cs" />
     <Compile Include="Net\ScriptContent.cs" />
     <Compile Include="Net\ScriptEventArgs.cs" />
+    <Compile Include="Net\Server.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
