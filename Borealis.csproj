@@ -49,6 +49,7 @@
     <Compile Include="Data\MySqlClient\MySqlDataManager.cs" />
     <Compile Include="Data\SqlClient\SqlDataManager.cs" />
     <Compile Include="Net\ContentController.cs" />
+    <Compile Include="Net\BasicNetwork.cs" />
     <Compile Include="Net\Encodable.cs" />
     <Compile Include="Net\Network.cs" />
     <Compile Include="Net\Script.cs" />
