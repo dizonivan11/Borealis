@@ -2,10 +2,8 @@
 using MySql.Data.MySqlClient;
 using System.Text;
 
-namespace Borealis.Data.MySqlClient
-{
-    public class MySqlDataManager
-    {
+namespace Borealis.Data.MySqlClient {
+    public class MySqlDataManager {
         public string HostName { get; set; }
         public string DatabaseName { get; set; }
         public string Username { get; set; }
@@ -18,7 +16,7 @@ namespace Borealis.Data.MySqlClient
             Username = username;
             Password = password;
         }
-        
+
         public MySqlConnection CreateNewConnection() {
             return new MySqlConnection(string.Format(ConnectionFormat, HostName, DatabaseName, Username, Password));
         }
