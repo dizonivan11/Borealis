@@ -10,7 +10,9 @@ namespace Borealis.Data.MySqlClient {
         public string Password { get; set; }
         public static string ConnectionFormat = "Server={0};Database={1};Uid={2};Pwd={3};";
 
-        public MySqlDataBase(string hostName, string databaseName, string userId = "root", string password = "") {
+        public MySqlDataBase(string hostName, string databaseName, string userId = "root", string password = "")
+            : base(databaseName) {
+
             HostName = hostName;
             DatabaseName = databaseName;
             UserId = userId;
@@ -24,7 +26,7 @@ namespace Borealis.Data.MySqlClient {
         public void LoadTable(string tableName) {
             MySqlDataAdapter adapter = new MySqlDataAdapter(string.Format("SELECT * FROM {0};", tableName), CreateNewConnection());
             adapter.FillSchema(this, SchemaType.Source);
-            adapter.Fill(this);
+            adapter.Fill(this, tableName);
         }
 
         public void Insert(
@@ -36,13 +38,11 @@ namespace Borealis.Data.MySqlClient {
             Tables[tableName].Rows.Add(newRow);
         }
 
-        public List<NameValueCollection> Select(
+        public DataRow[] Select(
             string tableName,
             string condition = "") {
-
-            List<NameValueCollection> rows = new List<NameValueCollection>();
-            DataRow[] selectedRows = Tables[tableName].Select(condition);
-            return rows;
+            
+            return Tables[tableName].Select(condition);
         }
 
         public void Update(
@@ -66,7 +66,8 @@ namespace Borealis.Data.MySqlClient {
 
         public void Reflect(string tableName) {
             MySqlDataAdapter adapter = new MySqlDataAdapter(string.Format("SELECT * FROM {0};", tableName), CreateNewConnection());
-            MySqlCommandBuilder builder = new MySqlCommandBuilder(adapter);
+            new MySqlCommandBuilder(adapter);
+            adapter.Update(this, tableName);
         }
     }
 }

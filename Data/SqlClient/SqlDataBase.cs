@@ -11,7 +11,9 @@ namespace Borealis.Data.SqlClient {
         public static string TrustedConnectionFormat = "Server={0};Database={1};Trusted_Connection=true;";
         public static string ConnectionFormat = "Server={0};Database={1};User Id={2};Password={3};";
         
-        public SqlDataBase(string hostName, string databaseName, string userId = "", string password = "") {
+        public SqlDataBase(string hostName, string databaseName, string userId = "", string password = "")
+            : base(databaseName) {
+
             HostName = hostName;
             DatabaseName = databaseName;
             UserId = userId;
@@ -28,7 +30,7 @@ namespace Borealis.Data.SqlClient {
         public void LoadTable(string tableName) {
             SqlDataAdapter adapter = new SqlDataAdapter(string.Format("SELECT * FROM {0};", tableName), CreateNewConnection());
             adapter.FillSchema(this, SchemaType.Source);
-            adapter.Fill(this);
+            adapter.Fill(this, tableName);
         }
 
         public void Insert(
@@ -40,13 +42,11 @@ namespace Borealis.Data.SqlClient {
             Tables[tableName].Rows.Add(newRow);
         }
 
-        public List<NameValueCollection> Select(
+        public DataRow[] Select(
             string tableName,
             string condition = "") {
 
-            List<NameValueCollection> rows = new List<NameValueCollection>();
-            DataRow[] selectedRows = Tables[tableName].Select(condition);
-            return rows;
+            return Tables[tableName].Select(condition);
         }
 
         public void Update(
@@ -70,7 +70,8 @@ namespace Borealis.Data.SqlClient {
 
         public void Reflect(string tableName) {
             SqlDataAdapter adapter = new SqlDataAdapter(string.Format("SELECT * FROM {0};", tableName), CreateNewConnection());
-            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+            new SqlCommandBuilder(adapter);
+            adapter.Update(this, tableName);
         }
     }
 }

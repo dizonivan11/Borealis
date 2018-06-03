@@ -6,19 +6,19 @@ namespace Borealis.Data.MySqlClient {
     public class MySqlDataManager {
         public string HostName { get; set; }
         public string DatabaseName { get; set; }
-        public string Username { get; set; }
+        public string UserId { get; set; }
         public string Password { get; set; }
         public static string ConnectionFormat = "Server={0};Database={1};Uid={2};Pwd={3};";
 
         public MySqlDataManager(string hostName, string databaseName, string userId = "root", string password = "") {
             HostName = hostName;
             DatabaseName = databaseName;
-            Username = userId;
+            UserId = userId;
             Password = password;
         }
 
         public MySqlConnection CreateNewConnection() {
-            return new MySqlConnection(string.Format(ConnectionFormat, HostName, DatabaseName, Username, Password));
+            return new MySqlConnection(string.Format(ConnectionFormat, HostName, DatabaseName, UserId, Password));
         }
 
         public string ParameterName(string columnName) {
