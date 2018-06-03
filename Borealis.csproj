@@ -46,9 +46,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\MySqlClient\MySqlDataBase.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Data\NameValueCollection.cs" />
     <Compile Include="Data\MySqlClient\MySqlDataManager.cs" />
-    <Compile Include="Data\SqlClient\DataBase.cs">
+    <Compile Include="Data\SqlClient\SqlDataBase.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Data\SqlClient\SqlDataManager.cs" />
