@@ -8,15 +8,23 @@ namespace Borealis.Data.SqlClient
     {
         public string HostName { get; set; }
         public string DatabaseName { get; set; }
-        public static string ConnectionFormat = "Server={0};Database={1};Trusted_connection=true;";
+        public string UserId { get; set; }
+        public string Password { get; set; }
+        public static string TrustedConnectionFormat = "Server={0};Database={1};Trusted_Connection=true;";
+        public static string ConnectionFormat = "Server={0};Database={1};User Id={2};Password={3};";
 
-        public SqlDataManager(string hostName, string databaseName) {
+        public SqlDataManager(string hostName, string databaseName, string userId = "", string password = "") {
             HostName = hostName;
             DatabaseName = databaseName;
+            UserId = userId;
+            Password = password;
         }
 
         public SqlConnection CreateNewConnection() {
-            return new SqlConnection(string.Format(ConnectionFormat, HostName, DatabaseName));
+            if (UserId == string.Empty || Password == string.Empty)
+                return new SqlConnection(string.Format(TrustedConnectionFormat, HostName, DatabaseName));
+            else
+                return new SqlConnection(string.Format(ConnectionFormat, HostName, DatabaseName, UserId, Password));
         }
 
         public string ParameterName(string columnName) {
@@ -29,7 +37,7 @@ namespace Borealis.Data.SqlClient
 
         public void Insert(
             string tableName,
-            Dictionary<string, object> row) {
+            NameValueCollection row) {
 
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("INSERT INTO {0}(", tableName);
@@ -58,13 +66,13 @@ namespace Borealis.Data.SqlClient
             cmd.Connection.Close();
         }
 
-        public List<Dictionary<string, object>> Select(
+        public List<NameValueCollection> Select(
             string tableName,
             string condition = "",
-            Dictionary<string, object> parameters = null,
+            NameValueCollection parameters = null,
             params string[] columnsToSelect) {
 
-            List<Dictionary<string, object>> selectedRows = new List<Dictionary<string, object>>();
+            List<NameValueCollection> selectedRows = new List<NameValueCollection>();
             StringBuilder sb = new StringBuilder();
             sb.Append("SELECT ");
             if (columnsToSelect.Length > 0) {
@@ -86,7 +94,7 @@ namespace Borealis.Data.SqlClient
             cmd.Connection.Open();
             SqlDataReader dr = cmd.ExecuteReader();
             while (dr.Read()) {
-                Dictionary<string, object> row = new Dictionary<string, object>();
+                NameValueCollection row = new NameValueCollection();
                 for (int i = 0; i < dr.FieldCount; i++) row.Add(dr.GetName(i), dr[i]);
                 selectedRows.Add(row);
             }
@@ -96,9 +104,9 @@ namespace Borealis.Data.SqlClient
 
         public void Update(
             string tableName,
-            Dictionary<string, object> row,
+            NameValueCollection row,
             string condition = "",
-            Dictionary<string, object> parameters = null) {
+            NameValueCollection parameters = null) {
 
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("UPDATE {0} SET ", tableName);
@@ -127,7 +135,7 @@ namespace Borealis.Data.SqlClient
         public void Delete(
             string tableName,
             string condition = "",
-            Dictionary<string, object> parameters = null) {
+            NameValueCollection parameters = null) {
 
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("DELETE FROM {0}", tableName);

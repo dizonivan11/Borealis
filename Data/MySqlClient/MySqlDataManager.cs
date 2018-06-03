@@ -33,7 +33,7 @@ namespace Borealis.Data.MySqlClient
 
         public void Insert(
             string tableName,
-            Dictionary<string, object> row) {
+            NameValueCollection row) {
 
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("INSERT INTO {0}(", tableName);
@@ -62,13 +62,13 @@ namespace Borealis.Data.MySqlClient
             cmd.Connection.Close();
         }
 
-        public List<Dictionary<string, object>> Select(
+        public List<NameValueCollection> Select(
             string tableName,
             string condition = "",
-            Dictionary<string, object> parameters = null,
+            NameValueCollection parameters = null,
             params string[] columnsToSelect) {
 
-            List<Dictionary<string, object>> selectedRows = new List<Dictionary<string, object>>();
+            List<NameValueCollection> selectedRows = new List<NameValueCollection>();
             StringBuilder sb = new StringBuilder();
             sb.Append("SELECT ");
             if (columnsToSelect.Length > 0) {
@@ -90,7 +90,7 @@ namespace Borealis.Data.MySqlClient
             cmd.Connection.Open();
             MySqlDataReader dr = cmd.ExecuteReader();
             while (dr.Read()) {
-                Dictionary<string, object> row = new Dictionary<string, object>();
+                NameValueCollection row = new NameValueCollection();
                 for (int i = 0; i < dr.FieldCount; i++) row.Add(dr.GetName(i), dr[i]);
                 selectedRows.Add(row);
             }
@@ -100,9 +100,9 @@ namespace Borealis.Data.MySqlClient
 
         public void Update(
             string tableName,
-            Dictionary<string, object> row,
+            NameValueCollection row,
             string condition = "",
-            Dictionary<string, object> parameters = null) {
+            NameValueCollection parameters = null) {
 
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("UPDATE {0} SET ", tableName);
@@ -131,7 +131,7 @@ namespace Borealis.Data.MySqlClient
         public void Delete(
             string tableName,
             string condition = "",
-            Dictionary<string, object> parameters = null) {
+            NameValueCollection parameters = null) {
 
             StringBuilder sb = new StringBuilder();
             sb.AppendFormat("DELETE FROM {0}", tableName);
