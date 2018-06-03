@@ -10,10 +10,10 @@ namespace Borealis.Data.MySqlClient {
         public string Password { get; set; }
         public static string ConnectionFormat = "Server={0};Database={1};Uid={2};Pwd={3};";
 
-        public MySqlDataManager(string hostName, string databaseName, string username, string password) {
+        public MySqlDataManager(string hostName, string databaseName, string userId = "root", string password = "") {
             HostName = hostName;
             DatabaseName = databaseName;
-            Username = username;
+            Username = userId;
             Password = password;
         }
 
