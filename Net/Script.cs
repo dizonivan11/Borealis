@@ -1,15 +1,13 @@
-﻿using System.Collections.Generic;
-
-public delegate void ScriptHandler(Borealis.Net.Network sender, Borealis.Net.ScriptEventArgs e);
+﻿public delegate void ScriptHandler(Borealis.Net.Network sender, Borealis.Net.ScriptEventArgs e);
 
 namespace Borealis.Net
 {
     public class Script
     {
-        public static Dictionary<string, ScriptHandler> Events;
+        public static ScriptEventCollection Events;
 
         static Script() {
-            Events = new Dictionary<string, ScriptHandler>();
+            Events = new ScriptEventCollection();
         }
 
         public static void Run(Network sender, ScriptEventArgs e) {
