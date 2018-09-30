@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using Timer = System.Timers.Timer;
 
-public delegate void AsyncEventHandler();
+public delegate void AsyncEventHandler(Borealis.Net.Network sender);
 
 namespace Borealis.Net
 {
@@ -44,9 +44,9 @@ namespace Borealis.Net
         private Timer delayer; // referenced to avoid being collected by the GC
 
         public event AsyncEventHandler Disconnected;
-        protected virtual void OnDisconnected() { Disconnected?.Invoke(); }
+        protected virtual void OnDisconnected() { Disconnected?.Invoke(this); }
         public event AsyncEventHandler Connected;
-        protected virtual void OnConnected() { Connected?.Invoke(); }
+        protected virtual void OnConnected() { Connected?.Invoke(this); }
 
         public Network(TcpClient socket) {
             Socket = socket;
