@@ -39,6 +39,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -58,12 +59,14 @@
     <Compile Include="Net\ContentController.cs" />
     <Compile Include="Net\BasicNetwork.cs" />
     <Compile Include="Net\Encodable.cs" />
+    <Compile Include="Net\EnumerableContent.cs" />
     <Compile Include="Net\Network.cs" />
     <Compile Include="Net\Script.cs" />
     <Compile Include="Net\ScriptContent.cs" />
     <Compile Include="Net\ScriptEventArgs.cs" />
     <Compile Include="Net\ScriptEventCollection.cs" />
     <Compile Include="Net\Server.cs" />
+    <Compile Include="Net\ThreadSafeExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
