@@ -13,20 +13,16 @@ namespace Borealis.Net
 {
     public abstract class Network
     {
-        public const int BUFFER_SIZE = 10240;
-        public const int TIMEOUT = 30000;
-        public const int PINGDELAY = 5000;
-        public static Encoding ENCODER;
+        public readonly int BUFFER_SIZE = 10240;
+        public readonly int TIMEOUT = 30000;
+        public readonly int PINGDELAY = 5000;
+        public readonly Encoding ENCODER = Encoding.UTF8;
+
+        public static readonly char ENUMERATOR = '\t';
+        public static readonly char ENUMERATOR_END = '\a';
+        public static readonly char EOS = '\n';
+        public static readonly char SPLITTER = '\v';
         
-        public static Encodable ENUMERATOR = new Encodable("&", "_%7%_");
-        public static Encodable ENUMERATOR_END = new Encodable("?", "_%/%_");
-        public static Encodable EOS = new Encodable(";", "_%:%_");
-        public static Encodable SPLITTER = new Encodable("|", "_%\\%_");
-
-        static Network() {
-            ENCODER = Encoding.UTF8;
-        }
-
         public TcpClient Socket { get; set; }
         public byte[] Buffer { get; set; }
         public string Data { get; set; }
@@ -143,12 +139,10 @@ namespace Borealis.Net
                     if (Data.IndexOf('\0') > -1) Data = Data.Replace("\0", string.Empty);
                     Console.WriteLine("{0} raw data: {1}", Socket.Client.RemoteEndPoint.ToString(), Data);
 
-                    if (Data.IndexOf(EOS.Decoded) > -1) {
-                        string[] requests = Data.Split(new string[] { EOS.Decoded }, StringSplitOptions.None);
+                    if (Data.IndexOf(EOS) > -1) {
+                        string[] requests = Data.Split(EOS);
                         for (int i = 0; i < requests.Length - 1; i++) {
                             Console.WriteLine("{0} sent data: {1}", Socket.Client.RemoteEndPoint.ToString(), requests[i]);
-                            requests[i] = requests[i].Decode(EOS);
-                            requests[i] = requests[i].Decode(SPLITTER);
                             ScriptEventArgs args = new ScriptEventArgs(requests[i]);
                             if (RunScriptAsync) Script.Run(this, args);
                             else {
@@ -185,8 +179,6 @@ namespace Borealis.Net
         public async void Write(string header, string content) {
             try {
                 NetworkStream stream = Socket.GetStream();
-                content = content.Encode(EOS);
-                content = content.Encode(SPLITTER);
                 string data = header + SPLITTER + content + EOS;
                 byte[] buffer = ENCODER.GetBytes(data);
                 await stream.WriteAsync(buffer, 0, buffer.Length);

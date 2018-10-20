@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Text;
 
 namespace Borealis.Net {
     public class EnumerableContent {
@@ -16,7 +12,6 @@ namespace Borealis.Net {
             if (Contents.Length < 1) return string.Empty;
             StringBuilder ret = new StringBuilder();
             for (int i = 0; i < Contents.Length; i++) {
-                Contents[i] = Contents[i].Encode(Network.ENUMERATOR_END).Encode(Network.ENUMERATOR);
                 if (i > 0) ret.Append(Network.ENUMERATOR);
                 ret.Append(Contents[i]);
             }

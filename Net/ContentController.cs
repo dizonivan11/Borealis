@@ -6,20 +6,10 @@ namespace Borealis.Net
 {
     public static class ContentController
     {
-        public static string Encode(this string value, Encodable encodable) {
-            return value.Replace(encodable.Decoded, encodable.Encoded);
-        }
-        
-        public static string Decode(this string value, Encodable encodable) {
-            return value.Replace(encodable.Encoded, encodable.Decoded);
-        }
-
         public static string Enumerate(this string[] values) {
             if (values.Length < 1) return string.Empty;
             StringBuilder ret = new StringBuilder();
             for (int i = 0; i < values.Length; i++) {
-                values[i] = values[i].Encode(Network.ENUMERATOR_END);
-                values[i] = values[i].Encode(Network.ENUMERATOR);
                 if (i > 0) ret.Append(Network.ENUMERATOR);
                 ret.Append(values[i]);
             }
@@ -41,8 +31,6 @@ namespace Borealis.Net
             if (values.Count < 1) return string.Empty;
             StringBuilder ret = new StringBuilder();
             for (int i = 0; i < values.Count; i++) {
-                values[i] = values[i].Encode(Network.ENUMERATOR_END);
-                values[i] = values[i].Encode(Network.ENUMERATOR);
                 if (i > 0) ret.Append(Network.ENUMERATOR);
                 ret.Append(values[i]);
             }
@@ -61,11 +49,11 @@ namespace Borealis.Net
         }
 
         public static string[] Denumerate(this string value) {
-            return value.Split(new string[] { Network.ENUMERATOR.Decoded }, StringSplitOptions.RemoveEmptyEntries);
+            return value.Split(Network.ENUMERATOR);
         }
 
         public static string[] Delist(this string value) {
-            return value.Split(new string[] { Network.ENUMERATOR_END.Decoded }, StringSplitOptions.RemoveEmptyEntries);
+            return value.Split(Network.ENUMERATOR_END);
         }
     }
 }
