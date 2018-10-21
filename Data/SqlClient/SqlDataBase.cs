@@ -4,6 +4,8 @@ using System.Data.SqlClient;
 
 namespace Borealis.Data.SqlClient {
     public class SqlDataBase : DataSet {
+        public Dictionary<string, SqlDataAdapter> Adapters { get; set; }
+        public ConflictOption Conflict { get; set; }
         public string HostName { get; set; }
         public string DatabaseName { get; set; }
         public string UserId { get; set; }
@@ -14,6 +16,8 @@ namespace Borealis.Data.SqlClient {
         public SqlDataBase(string hostName, string databaseName, string userId = "", string password = "")
             : base(databaseName) {
 
+            Adapters = new Dictionary<string, SqlDataAdapter>();
+            Conflict = ConflictOption.CompareRowVersion;
             HostName = hostName;
             DatabaseName = databaseName;
             UserId = userId;
@@ -29,6 +33,7 @@ namespace Borealis.Data.SqlClient {
 
         public void LoadTable(string tableName) {
             SqlDataAdapter adapter = new SqlDataAdapter(string.Format("SELECT * FROM {0};", tableName), CreateNewConnection());
+            Adapters.Add(tableName, adapter);
             adapter.FillSchema(this, SchemaType.Source);
             adapter.Fill(this, tableName);
         }
@@ -37,6 +42,7 @@ namespace Borealis.Data.SqlClient {
             string tableName,
             NameValueCollection columns) {
 
+            if (!Adapters.ContainsKey(tableName)) return;
             DataRow newRow = Tables[tableName].NewRow();
             foreach (string columnName in columns.Keys) newRow[columnName] = columns[columnName];
             Tables[tableName].Rows.Add(newRow);
@@ -46,6 +52,7 @@ namespace Borealis.Data.SqlClient {
             string tableName,
             string condition = "") {
 
+            if (!Adapters.ContainsKey(tableName)) return null;
             return Tables[tableName].Select(condition);
         }
 
@@ -54,24 +61,30 @@ namespace Borealis.Data.SqlClient {
             NameValueCollection columns,
             string condition = "") {
 
+            if (!Adapters.ContainsKey(tableName)) return;
             DataRow[] selectedRows = Tables[tableName].Select(condition);
-            for (int i = 0; i < selectedRows.Length; i++)
-                foreach (string columnName in columns.Keys) selectedRows[i][columnName] = columns[columnName];
+            for (int i = 0; i < selectedRows.Length; i++) {
+                int rowIndex = Tables[tableName].Rows.IndexOf(selectedRows[i]);
+                foreach (string columnName in columns.Keys)
+                    Tables[tableName].Rows[rowIndex][columnName] = columns[columnName];
+            }
         }
 
         public void Delete(
             string tableName,
             string condition = "") {
-            
+
+            if (!Adapters.ContainsKey(tableName)) return;
             DataRow[] selectedRows = Tables[tableName].Select(condition);
             for (int i = 0; i < selectedRows.Length; i++)
                 selectedRows[i].Delete();
         }
 
         public void Reflect(string tableName) {
-            SqlDataAdapter adapter = new SqlDataAdapter(string.Format("SELECT * FROM {0};", tableName), CreateNewConnection());
-            new SqlCommandBuilder(adapter);
-            adapter.Update(this, tableName);
+            if (!Adapters.ContainsKey(tableName)) return;
+            SqlCommandBuilder cmdBuilder = new SqlCommandBuilder(Adapters[tableName]);
+            cmdBuilder.ConflictOption = Conflict;
+            Adapters[tableName].Update(this, tableName);
         }
     }
 }
