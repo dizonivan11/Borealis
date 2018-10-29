@@ -16,8 +16,14 @@ namespace Borealis.Data.SqlClient {
         public SqlDataBase(string hostName, string databaseName, string userId = "", string password = "")
             : base(databaseName) {
 
+            // Creates a dictionary for registering table's adapter to update one by one in the reflect method.
             Adapters = new Dictionary<string, SqlDataAdapter>();
+
+            // Automatically set the conflict option to compare row version,
+            // This option will find the first Timestamp (the data type not column name) in a column of a row.
+            // Then compare it to the Timestamp of the new changes, if it is updated then the row will update.
             Conflict = ConflictOption.CompareRowVersion;
+
             HostName = hostName;
             DatabaseName = databaseName;
             UserId = userId;
