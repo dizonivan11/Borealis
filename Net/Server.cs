@@ -19,7 +19,7 @@ namespace Borealis.Net {
             AcceptNextClient();
         }
 
-        private async void AcceptNextClient() {
+        async void AcceptNextClient() {
             TcpClient newClient = await listener.AcceptTcpClientAsync();
             OnClientAccepted(new Network(newClient));
             AcceptNextClient();
