@@ -10,7 +10,7 @@ using Timer = System.Timers.Timer;
 public delegate void AsyncEventHandler(Borealis.Net.Network sender);
 
 namespace Borealis.Net {
-    public abstract class Network {
+    public class Network {
         public readonly int BUFFER_SIZE = 10240;
         public readonly int TIMEOUT = 30000;
         public readonly int PINGRATE = 5000;
@@ -79,7 +79,7 @@ namespace Borealis.Net {
                 try {
                     Console.WriteLine("Pinged {0} to keep connection alive.", Socket.Client.RemoteEndPoint.ToString());
                 } catch {
-                    Console.WriteLine("Unknown address not responding");
+                    Console.WriteLine("Unknown address not responding.");
                 }
                 WritePing();
             }
