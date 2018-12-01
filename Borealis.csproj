@@ -57,9 +57,9 @@
     </Compile>
     <Compile Include="Data\SqlClient\SqlDataManager.cs" />
     <Compile Include="Net\ContentController.cs" />
-    <Compile Include="Net\BasicNetwork.cs" />
     <Compile Include="Net\EnumerableContent.cs" />
     <Compile Include="Net\Network.cs" />
+    <Compile Include="Net\Networks.cs" />
     <Compile Include="Net\Script.cs" />
     <Compile Include="Net\ScriptContent.cs" />
     <Compile Include="Net\ScriptEventArgs.cs" />
