@@ -8,6 +8,7 @@ using System.Threading;
 using Timer = System.Timers.Timer;
 
 public delegate void AsyncEventHandler(Borealis.Net.Network sender);
+public delegate void ErrorEventHandler(Borealis.Net.Network sender, Exception ex);
 
 namespace Borealis.Net {
     public class Network {
@@ -43,6 +44,8 @@ namespace Borealis.Net {
         protected virtual void OnDisconnected() { Disconnected?.Invoke(this); }
         public event AsyncEventHandler Connected;
         protected virtual void OnConnected() { Connected?.Invoke(this); }
+        public event ErrorEventHandler ConnectionError;
+        protected virtual void OnConnectionError(Exception ex) { ConnectionError?.Invoke(this, ex); }
 
         public Network(TcpClient socket) {
             Socket = socket;
@@ -86,7 +89,13 @@ namespace Borealis.Net {
         }
 
         public async void Connect(IPEndPoint ipEndPoint) {
-            if (!Socket.Connected) await Socket.ConnectAsync(ipEndPoint.Address, ipEndPoint.Port);
+            if (!Socket.Connected)
+                try {
+                    await Socket.ConnectAsync(ipEndPoint.Address, ipEndPoint.Port);
+                } catch (Exception ex) {
+                    OnConnectionError(ex);
+                    return;
+                }
             OnConnected();
             Socket.GetStream().BeginRead(Buffer, 0, Buffer.Length, new AsyncCallback(Read), null);
             WritePing();
