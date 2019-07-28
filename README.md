@@ -68,3 +68,85 @@ namespace BorealisDataTest {
     }
 }
 ```
+
+> Another example usage of the library:
+```csharp
+using Borealis.Net;
+using System;
+using System.Collections.Generic;
+using System.Net;
+
+namespace chatsserver {
+    class Program {
+        static readonly List<Network> clients = new List<Network>();
+
+        static readonly IPAddress serverHost = IPAddress.Parse("127.0.0.1");
+        static readonly int serverPort = 7447;
+        static readonly IPEndPoint serverAddress = new IPEndPoint(serverHost, serverPort);
+        static readonly Server server = new Server(serverAddress);
+
+        static void Main(string[] args) {
+            server.ClientAccepted += Server_ClientAccepted;
+            InitializeServerScript();
+            server.Start();
+            Console.WriteLine("[STATUS] Server started.");
+
+            // Input Loop
+            // Note: This also prevents the server from exiting after starting.
+            string cmd = string.Empty;
+            while (cmd != "exit") {
+                cmd = Console.ReadLine();
+                
+                switch (cmd) {
+                    default:
+                        Console.WriteLine("[INFO] Invalid command.");
+                        break;
+                    case "help":
+                        Console.WriteLine("[INFO] Valid commands:");
+                        Console.WriteLine("[INFO] 'host' : Display the server's host address.");
+                        Console.WriteLine("[INFO] 'port' : Display the server's port number.");
+                        Console.WriteLine("[INFO] 'clct' : Display the number of clients handled by the server.");
+                        break;
+                    case "host":
+                        Console.WriteLine("[INFO] Server Host Address: {0}", serverHost.ToString());
+                        break;
+                    case "port":
+                        Console.WriteLine("[INFO] Server Port: {0}", serverPort);
+                        break;
+                    case "clct":
+                        Console.WriteLine("[INFO] Number of Clients Handled: {0}", clients.Count);
+                        break;
+                }
+            }
+        }
+
+        static void InitializeServerScript() {
+            // Add network events here.
+            // Note: Script class is a static class for handling Async network events
+            // Note: Use "EventQueue" in Network abstract class for handling network events syncrounously.
+
+            // Ex. An event when some client sends a message to the server with header "SEND"
+            Script.Events.Add("SEND", delegate (Network client, ScriptEventArgs e) {
+                // Gets the content of the first row in first column and send to all connected clients with header "RECEIVE"
+                Broadcast("RECEIVE", e.Content.Items[0][0]);
+            });
+        }
+
+        static void Server_ClientAccepted(Network newClient) {
+            // Occurs when a client (the "newClient" parameter) connects to the server
+            Console.WriteLine("[ACCEPT] New client connected.");
+            clients.Add(newClient);
+            newClient.Respond();
+            
+            // Broadcast to all connected clients that a new client has joined the server and displays its IP address
+            Broadcast("JOIN", newClient.Socket.Client.RemoteEndPoint.ToString());
+        }
+
+        static void Broadcast(string header, string message) {
+            for (int i = 0; i < clients.Count; i++) {
+                clients[i].Write(header, message);
+            }
+        }
+    }
+}
+```
