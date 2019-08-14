@@ -1,6 +1,6 @@
 # Borealis
 
-> A .NET Library which contains a method for basic CRUD (Create, Retrieve, Update and Delete) operations. It can be used with SQL and MySQL. It also includes Tcp Socket Framework which handles socket connections in Client-Server Model.
+> A .NET Library which contains Tcp Socket Framework which handles socket connections in Client-Server Model. It also has helper methods for basic CRUD database operations which is handled inside DataManager.
 
 > An example usage of the library:
 ```csharp
