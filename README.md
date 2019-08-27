@@ -1,6 +1,6 @@
 # Borealis
 
-> A .NET Library which contains Tcp Socket Framework which handles socket connections in Client-Server Model. It also has helper methods for basic CRUD database operations which is handled inside DataManager. It also contains DataBase class which is the same as DataManager but database is handled in memory which is faster in runtime and has a method for automatically applying any changes made to the table at runtime.
+> A .NET Library which contains Tcp Socket Framework which handles socket connections in Client-Server Model. It also has helper methods for basic CRUD database operations which is handled inside DataManager. It also contains DataBase class which is the same as DataManager but database is handled in memory which is faster in runtime and has a method for automatically applying any changes made to the table at runtime into the source table.
 
 > An example usage of the library:
 ```csharp
