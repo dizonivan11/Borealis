@@ -19,6 +19,7 @@ namespace Borealis.Net {
             AcceptNextClient();
         }
 
+        // Run [newClient.Respond()] inside [OnClientAccepted] function after handling [newClient] to start communicating to the client
         async void AcceptNextClient() {
             TcpClient newClient = await listener.AcceptTcpClientAsync();
             OnClientAccepted(new Network(newClient));

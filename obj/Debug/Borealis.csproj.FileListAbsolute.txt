@@ -1,0 +1,17 @@
+F:\Projects\Borealis\Borealis\bin\Debug\Borealis.dll
+F:\Projects\Borealis\Borealis\bin\Debug\Borealis.pdb
+F:\Projects\Borealis\Borealis\obj\Debug\Borealis.csprojResolveAssemblyReference.cache
+F:\Projects\Borealis\Borealis\obj\Debug\Borealis.csproj.CoreCompileInputs.cache
+F:\Projects\Borealis\Borealis\obj\Debug\Borealis.dll
+F:\Projects\Borealis\Borealis\obj\Debug\Borealis.pdb
+F:\Projects\Borealis\Borealis\bin\Debug\MySql.Data.dll
+F:\Projects\Borealis\Borealis\bin\Debug\MySql.Data.xml
+F:\Projects\Borealis\Borealis\obj\Debug\Borealis.csproj.CopyComplete
+D:\Projects\Borealis\Borealis\bin\Debug\Borealis.dll
+D:\Projects\Borealis\Borealis\bin\Debug\Borealis.pdb
+D:\Projects\Borealis\Borealis\bin\Debug\MySql.Data.dll
+D:\Projects\Borealis\Borealis\bin\Debug\MySql.Data.xml
+D:\Projects\Borealis\Borealis\obj\Debug\Borealis.csprojAssemblyReference.cache
+D:\Projects\Borealis\Borealis\obj\Debug\Borealis.csproj.CopyComplete
+D:\Projects\Borealis\Borealis\obj\Debug\Borealis.dll
+D:\Projects\Borealis\Borealis\obj\Debug\Borealis.pdb

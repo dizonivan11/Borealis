@@ -12,17 +12,11 @@ public delegate void ErrorEventHandler(Borealis.Net.Network sender, Exception ex
 
 namespace Borealis.Net {
     public class Network {
-        public readonly int BUFFER_SIZE = 10240;
-        public readonly int TIMEOUT = 30000;
-        public readonly int PINGRATE = 5000;
+        public readonly int BUFFER_SIZE = 1024;
+        public readonly int TIMEOUT = 30000; // 30 second timeout
+        public readonly int PINGRATE = 5000; // Every 5 seconds
         public readonly Encoding ENCODER = Encoding.UTF8;
         public readonly StringBuilder writeDataBuilder = new StringBuilder();
-
-        public static readonly char[] PING = new char[] { '\0' };
-        public static readonly char ENUMERATOR = '\t';
-        public static readonly char ENUMERATOR_END = '\a';
-        public static readonly char EOS = '\n';
-        public static readonly char SPLITTER = '\v';
 
         public TcpClient Socket { get; set; }
         public byte[] Buffer { get; set; }
@@ -39,6 +33,8 @@ namespace Borealis.Net {
         // PING DELAY CONTROLLER
         private bool stillResponding;
         private Timer delayer; // referenced to avoid being collected by the GC
+        public event AsyncEventHandler Pinged;
+        protected virtual void OnPinged() { Pinged?.Invoke(this); }
 
         public event AsyncEventHandler Disconnected;
         protected virtual void OnDisconnected() { Disconnected?.Invoke(this); }
@@ -80,7 +76,7 @@ namespace Borealis.Net {
             if (stillResponding) {
                 stillResponding = false;
                 try {
-                    Console.WriteLine("Pinged {0} to keep connection alive.", Socket.Client.RemoteEndPoint.ToString());
+                    OnPinged();
                 } catch {
                     Console.WriteLine("Unknown address not responding.");
                 }
@@ -101,6 +97,9 @@ namespace Borealis.Net {
             WritePing();
         }
 
+        // Client initiates this function after completing handshake, its purposes are:
+        // 1. To initiate the ping thread handling timeout and disconnection
+        // 2. To start receiving responses from the server
         Thread ping;
         public void Respond() {
             ping = new Thread(delegate () {
@@ -149,19 +148,23 @@ namespace Borealis.Net {
                     Console.WriteLine("{0} raw data: {1}", Socket.Client.RemoteEndPoint.ToString(), Data);
 #endif
 
-                    if (Data.IndexOf(EOS) > -1) {
-                        string[] requests = Data.Split(EOS);
+                    if (Data.IndexOf(RequestData.EOT) > -1) {
+                        string[] requests = Data.Split(RequestData.EOT);
                         for (int i = 0; i < requests.Length - 1; i++) {
 #if SHOW_REQUEST
                             Console.WriteLine("{0} requested data: {1}", Socket.Client.RemoteEndPoint.ToString(), requests[i]);
 #endif
-                            ScriptEventArgs args = new ScriptEventArgs(requests[i]);
-                            if (RunScriptAsync) Script.Run(this, args);
-                            else {
-                                Script syncScript = new Script(this, args);
+                            RequestData request = RequestData.Destringify(requests[i]);
+                            if (RunScriptAsync) {
+                                // Run script directly in asynchronous mode (default)
+                                Script.Run(this, request);
+                            }  else {
+                                // Instantiate and store script in queue which will run later in synchronous mode
+                                Script syncScript = new Script(this, request);
                                 EventQueue.Enqueue(syncScript);
                             }
                         }
+                        // Store remaining request data after processing first request
                         Data = requests[requests.Length - 1];
                     }
 #if SHOW_REMAIN
@@ -182,7 +185,7 @@ namespace Borealis.Net {
         public async void WritePing() {
             try {
                 NetworkStream stream = Socket.GetStream();
-                byte[] buffer = ENCODER.GetBytes(PING);
+                byte[] buffer = ENCODER.GetBytes(RequestData.PING);
                 await stream.WriteAsync(buffer, 0, buffer.Length);
                 await stream.FlushAsync();
             } catch (Exception ex) {
@@ -190,17 +193,14 @@ namespace Borealis.Net {
             }
         }
 
-        public async void Write(string header, string content) {
+        public async void Write(RequestData request) {
             try {
                 NetworkStream stream = Socket.GetStream();
-                writeDataBuilder.Clear();
-                writeDataBuilder.Append(header);
-                writeDataBuilder.Append(SPLITTER);
-                writeDataBuilder.Append(content);
-                writeDataBuilder.Append(EOS);
+                writeDataBuilder.Append(RequestData.Stringify(request));
                 byte[] buffer = ENCODER.GetBytes(writeDataBuilder.ToString());
                 await stream.WriteAsync(buffer, 0, buffer.Length);
                 await stream.FlushAsync();
+                writeDataBuilder.Clear();
 #if SHOW_WRITE
                 Console.WriteLine(Socket.Client.RemoteEndPoint.ToString() + " wrote " + data);
 #endif
