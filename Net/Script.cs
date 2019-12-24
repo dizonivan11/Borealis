@@ -7,9 +7,9 @@ namespace Borealis.Net
         public readonly static ScriptEventCollection Events = new ScriptEventCollection();
 
         public static void Run(Network sender, RequestData r) {
-            if (r.HasHeader) {
-                Events[r["header"].ToString()].DynamicInvoke(sender, r);
-            }
+            if (!r.HasHeader) return;
+            string header = r["header"].ToString();
+            if (Events.ContainsKey(header)) Events[header].DynamicInvoke(sender, r);
         }
         
         public Network Sender { get; set; }
